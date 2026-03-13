@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的视频作品集</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #0f0f0f;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* 头部标题 */
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid #2a2a2a;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            color: #fff;
+        }
+        /* 分类导航 */
+        .category-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .category-btn {
+            padding: 10px 20px;
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 24px;
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .category-btn:hover,
+        .category-btn.active {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+        /* 视频播放区 */
+        .player-section {
+            background-color: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        #main-video {
+            width: 100%;
+            display: block;
+            aspect-ratio: 16/9;
+        }
+        .video-info {
+            padding: 20px;
+        }
+        .video-info h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        .video-info p {
+            font-size: 14px;
+            color: #999;
+        }
+        /* 视频列表 */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .video-card {
+            background-color: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .video-card:hover {
+            transform: translateY(-4px);
+        }
+        .video-cover {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            background-color: #222;
+        }
+        .video-desc {
+            padding: 12px;
+        }
+        .video-desc h3 {
+            font-size: 15px;
+            margin-bottom: 6px;
+            color: #fff;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .video-desc p {
+            font-size: 12px;
+            color: #999;
+        }
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 24px;
+            }
+            .category-nav {
+                gap: 8px;
+            }
+            .category-btn {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>我的视频作品集</h1>
+        </header>
+
+        <!-- 分类导航 -->
+        <div class="category-nav" id="categoryNav"></div>
+
+        <!-- 视频播放区 -->
+        <div class="player-section">
+            <video id="main-video" controls></video>
+            <div class="video-info">
+                <h2 id="currentTitle">请选择一个视频播放</h2>
+                <p id="currentDesc"></p>
+            </div>
+        </div>
+
+        <!-- 视频列表 -->
+        <div class="video-grid" id="videoGrid"></div>
+    </div>
+
+    <script>
+        // ====================== 你只需要修改这里 ======================
+        const categories = [
+            "动态海报", "快闪", "采访类", "活动", "脚本",
+            "ae特效&三维", "短视频剧情", "产品微剧情", "宣传类",
+            "ip短视频类", "视频剪辑后期作品", "mg", "创意类视频",
+            "筛选", "AI视频"
+        ];
+
+        // 示例视频数据，你可以按分类添加自己的视频
+        const videos = {
+            "动态海报": [
+                {
+                    title: "动态海报作品1",
+                    desc: "品牌活动动态视觉",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=1"
+                }
+            ],
+            "快闪": [
+                {
+                    title: "快闪作品1",
+                    desc: "节奏感快剪作品",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=2"
+                }
+            ],
+            "采访类": [
+                {
+                    title: "人物采访作品1",
+                    desc: "纪实采访剪辑",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=3"
+                }
+            ],
+            "活动": [
+                {
+                    title: "活动记录作品1",
+                    desc: "线下活动现场记录",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=4"
+                }
+            ],
+            "脚本": [
+                {
+                    title: "脚本分镜演示1",
+                    desc: "分镜脚本可视化",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=5"
+                }
+            ],
+            "ae特效&三维": [
+                {
+                    title: "AE特效作品1",
+                    desc: "视觉特效合成",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=6"
+                }
+            ],
+            "短视频剧情": [
+                {
+                    title: "竖屏短剧1",
+                    desc: "情感向短视频剧情",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=7"
+                }
+            ],
+            "产品微剧情": [
+                {
+                    title: "产品植入微剧情1",
+                    desc: "商品场景化剧情",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=8"
+                }
+            ],
+            "宣传类": [
+                {
+                    title: "品牌宣传片1",
+                    desc: "企业形象宣传",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=9"
+                }
+            ],
+            "ip短视频类": [
+                {
+                    title: "IP形象短视频1",
+                    desc: "IP人设打造内容",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=10"
+                }
+            ],
+            "视频剪辑后期作品": [
+                {
+                    title: "影视后期剪辑1",
+                    desc: "多素材混剪作品",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=11"
+                }
+            ],
+            "mg": [
+                {
+                    title: "MG动画作品1",
+                    desc: "信息可视化动画",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=12"
+                }
+            ],
+            "创意类视频": [
+                {
+                    title: "创意实验短片1",
+                    desc: "艺术向实验视频",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=13"
+                }
+            ],
+            "筛选": [
+                {
+                    title: "精选作品集1",
+                    desc: "个人代表作品合集",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=14"
+                }
+            ],
+            "AI视频": [
+                {
+                    title: "AI生成视频1",
+                    desc: "AI辅助创作短片",
+                    url: "https://www.w3school.com.cn/i/movie.mp4",
+                    cover: "https://picsum.photos/640/360?random=15"
+                }
+            ]
+        };
+        // ====================== 以上是需要修改的部分 ======================
+
+        // 初始化分类导航
+        const categoryNav = document.getElementById('categoryNav');
+        const videoGrid = document.getElementById('videoGrid');
+        const mainVideo = document.getElementById('main-video');
+        const currentTitle = document.getElementById('currentTitle');
+        const currentDesc = document.getElementById('currentDesc');
+
+        let currentCategory = categories[0];
+
+        // 渲染分类按钮
+        function renderCategories() {
+            categoryNav.innerHTML = '';
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = `category-btn ${cat === currentCategory ? 'active' : ''}`;
+                btn.textContent = cat;
+                btn.onclick = () => {
+                    currentCategory = cat;
+                    renderCategories();
+                    renderVideos();
+                };
+                categoryNav.appendChild(btn);
+            });
+        }
+
+        // 渲染当前分类下的视频
+        function renderVideos() {
+            videoGrid.innerHTML = '';
+            const currentVideos = videos[currentCategory] || [];
+            if (currentVideos.length === 0) {
+                videoGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">暂无作品</p>';
+                return;
+            }
+            currentVideos.forEach(v => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.innerHTML = `
+                    <img class="video-cover" src="${v.cover}" alt="${v.title}">
+                    <div class="video-desc">
+                        <h3>${v.title}</h3>
+                        <p>${v.desc}</p>
+                    </div>
+                `;
+                card.onclick = () => playVideo(v);
+                videoGrid.appendChild(card);
+            });
+            // 默认播放第一个视频
+            if (currentVideos.length > 0) {
+                playVideo(currentVideos[0]);
+            }
+        }
+
+        // 播放视频
+        function playVideo(v) {
+            mainVideo.src = v.url;
+            currentTitle.textContent = v.title;
+            currentDesc.textContent = v.desc;
+        }
+
+        // 初始化页面
+        renderCategories();
+        renderVideos();
+    </script>
+</body>
+</html>
